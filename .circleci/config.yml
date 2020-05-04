@@ -1,0 +1,51 @@
+version: 2.1
+
+parameters:
+  kre-image-tag:
+    type: string
+    default: "latest"
+  agent-download-link:
+    type: string
+    default: ""
+  job-info:
+    type: string
+    default: ""
+  agent-config:
+    type: string
+    default: ""
+
+jobs:
+  katalon-test:
+    docker:
+      - image: katalonstudio/katalon:<< pipeline.parameters.kre-image-tag >>
+    environment:
+      AGENT_DOWNLOAD_LINK: << pipeline.parameters.agent-download-link >>
+      JOB_INFO: << pipeline.parameters.job-info >>
+    steps:
+      - run:
+          name: Run Katalon Test
+          command: |
+            set -x
+            set -o nounset
+
+            mkdir /agent
+
+            cd /agent
+
+            wget -O agent "${AGENT_DOWNLOAD_LINK}"
+            echo "${JOB_INFO}" >> job.json
+
+            set +x
+            echo "<< pipeline.parameters.agent-config >>" >> agentconfig
+            set -x
+
+            chmod 777 *
+            ls -al
+
+            ./agent start-agent --ci
+
+workflows:
+  version: 2.1
+  build_and_test:
+    jobs:
+      - katalon-test

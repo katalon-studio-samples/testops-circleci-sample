@@ -36,7 +36,7 @@ jobs:
     environment:
       AGENT_DOWNLOAD_LINK: << pipeline.parameters.agent-download-link >>
       JOB_INFO: << pipeline.parameters.job-info >>
-      SERVER_URL: << pipeline.parameters.server-url >>
+      SERVER_URL: << pipeline.parameters.TESTOPS_SERVER_URL >>
     steps:
       - run:
           name: Run Katalon Test

@@ -43,13 +43,32 @@ jobs:
           command: |
             set -x
             set -o nounset
-            
+
+            echo "Checking Katalon network connection"
             curl -v -m 10 $SERVER_URL/info
 
-            mkdir /agent
+            echo "Upgrading environments"
+            echo "Upgrade Google Chrome"
+            chrome_package='google-chrome-stable_current_amd64.deb'
+            wget -O $chrome_package  https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            dpkg -i $chrome_package || apt -y -f install
+            
+            echo "Wrap Chrome binary"
+            WRAPPER_PATH=$(readlink -f /usr/bin/google-chrome)
+            BASE_PATH="$WRAPPER_PATH-base"
+            mv "$WRAPPER_PATH" "$BASE_PATH"
+            
+            cat > "$WRAPPER_PATH" \<<_EOF
+            #!/bin/bash
+            # Note: exec -a below is a bashism.
+            exec -a "\$0" "$BASE_PATH" --no-sandbox "\$@"
+            _EOF
+            chmod +x "$WRAPPER_PATH"
+            
+            echo "$(google-chrome --version)" >> $KATALON_VERSION_FILE || true
 
-            cd /agent
-
+            echo "Installing Katalon agent"
+            mkdir /agent && cd /agent
             wget -O agent "${AGENT_DOWNLOAD_LINK}"
             echo "${JOB_INFO}" >> job.json
 
@@ -58,10 +77,10 @@ jobs:
             set -x
             
             cat agentconfig
-
             chmod 777 *
             ls -al
-            
+
+            echo "Executing test"
             xvfb-run -s "-screen 0 $DISPLAY_CONFIGURATION" ./agent start-agent --ci
             ret_code=$?
             

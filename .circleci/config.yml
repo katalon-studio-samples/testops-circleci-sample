@@ -16,18 +16,6 @@ parameters:
   server-url:
     type: string
     default: ""
-  TESTOPS_API_KEY:
-    type: string
-    default: ""
-  TESTOPS_SERVER_URL:
-    type: string
-    default: ""
-  TESTOPS_PROJECT_ID:
-    type: string
-    default: ""
-  TESTOPS_SESSION_ID:
-    type: string
-    default: ""
 
 jobs:
   katalon-test:
